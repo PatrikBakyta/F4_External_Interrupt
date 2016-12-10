@@ -32,22 +32,6 @@ SOFTWARE.
 #include "stm32f4xx_syscfg.h"
 #include "misc.h"
 
-void Configure_Output_PC7(void) {
-
-	GPIO_InitTypeDef GPIO_InitStruct2;
-
-	/* Enable clock for GPIOB */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
-
-	/* Set pin as input */
-	GPIO_InitStruct2.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStruct2.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStruct2.GPIO_Pin = GPIO_Pin_7;
-	GPIO_InitStruct2.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStruct2.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOC, &GPIO_InitStruct2);
-}
-
 void Configure_PB12(void) {
 	/* Set variables used */
 	GPIO_InitTypeDef GPIO_InitStruct;
@@ -63,7 +47,7 @@ void Configure_PB12(void) {
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
-	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_DOWN;
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -76,7 +60,7 @@ void Configure_PB12(void) {
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	/* Interrupt mode */
 	EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
-	/* Triggers on rising and falling edge */
+	/* Triggers on rising edge */
 	EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
 	/* Add to EXTI */
 	EXTI_Init(&EXTI_InitStruct);
@@ -95,12 +79,12 @@ void Configure_PB12(void) {
 }
 
 /* Handle PB12 interrupt */
-void EXTI15_10_IRQHandler(void) {
+extern "C" void EXTI15_10_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
 	if (EXTI_GetITStatus(EXTI_Line12) != RESET) {
 		/* Do your stuff when PB12 is changed */
 
-		GPIO_ResetBits(GPIOD, GPIO_Pin_13);
+		GPIO_ToggleBits(GPIOD, GPIO_Pin_13);
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit(EXTI_Line12);
 	}
@@ -124,11 +108,8 @@ void initLED(void) {
 
 int main(void) {
 
-	//SystemInit();
-	Configure_Output_PC7();
 	Configure_PB12();
 	initLED();
-	GPIO_SetBits(GPIOD, GPIO_Pin_13);
 	while (1) {
 
 	}
